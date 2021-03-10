@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+{% block head %}Upload Data{% endblock head %}
+
+{% block content %}
+
+<div class="row">
+    <div class="col-lg-6 offset-lg-3">
+        <div class="card">
+            <div class="card-header card-header-primary">
+                <h3 class="card-title">Royalty Data Upload</h3>
+            </div>
+            <div class="card-body table-responsive">
+                <form action="{% url 'upload_royalty' %}" method="post" enctype="multipart/form-data" id="form_1">
+                    {%csrf_token%}
+                    <div class="custom-file">
+                        <input type="file" class="custom-file-input" id="validatedCustomFile" required name="royalty" accept=".xlsx">
+                        <label class="custom-file-label">Choose file...</label>
+                    </div>
+                    <div class="progress">
+                    <div id="progressBar_1" class="progress-bar" role="progressbar_1" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;">
+                        0%
+                    </div>
+                </div>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+                
+                
+                <div class="alert alert-danger" role="alert" id='error_royalty' style="display:none">
+
+                </div>
+
+                <div class="alert alert-warning" role="alert" id='warning_royalty' style="display:none">
+                </div>
+
+                <div class="alert alert-success" role="alert" id='success_royalty' style="display:none">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-6 offset-lg-3">
+        <div class="card">
+            <div class="card-header card-header-primary">
+                <h3 class="card-title">Metadata Data Upload</h3>
+            </div>
+            <div class="card-body table-responsive">
+                <form action="{% url 'upload_metadata' %}" method="post" enctype="multipart/form-data" id="form_2">
+                    {%csrf_token%}
+                    <div class="custom-file">
+                        <input type="file" class="custom-file-input" id="validatedCustomFile" required name="metadata" accept=".xlsx">
+                        <label class="custom-file-label">Choose file...</label>
+                    </div>
+                    <div class="progress">
+                        <div id="progressBar_2" class="progress-bar" role="progressbar_2" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;">
+                            0%
+                        </div>
+                    </div>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+                <div class="alert alert-danger" role="alert" id='error_metadata' style="display:none">
+
+                </div>
+
+                <div class="alert alert-warning" role="alert" id='warning_metadata' style="display:none">
+                </div>
+
+                <div class="alert alert-success" role="alert" id='success_metadata' style="display:none">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+$(document).ready(function() {
+
+	$('#form_1').on('submit', function(event) {
+
+		event.preventDefault();
+
+		var formData = new FormData($('#form_1')[0]);
+        $('#progressBar_1').attr('aria-valuenow', 0).css('width', 0 + '%').text(0 + '%');
+        $("#error_royalty").css('display', 'none')
+		$.ajax({
+			xhr : function() {
+				var xhr = new window.XMLHttpRequest();
+
+				xhr.upload.addEventListener('progress', function(e) {
+
+					if (e.lengthComputable) {
+
+						console.log('Bytes Loaded: ' + e.loaded);
+						console.log('Total Size: ' + e.total);
+						console.log('Percentage Uploaded: ' + (e.loaded / e.total))
+
+						var percent = Math.round((e.loaded / e.total) * 100);
+
+						$('#progressBar_1').attr('aria-valuenow', percent).css('width', percent + '%').text(percent + '%');
+
+					}
+
+				});
+
+				return xhr;
+			},
+			type : 'POST',
+			url : '/upload_royalty',
+			data : formData,
+			processData : false,
+			contentType : false,
+			success : function(response) {
+                if (response.royalty_error_message){
+                    $("#error_royalty").css('display', 'block');
+                    $("#error_royalty").html(response.royalty_error_message);
+                }
+                
+                if (response.royalty_alert_message){
+                    $("#warning_royalty").css('display', 'block');
+                    $("#warning_royalty").html(response.royalty_alert_message);
+                }
+
+                if (response.royalty_success_message){
+                    $("#success_royalty").css('display', 'block');
+                    $("#success_royalty").html(response.royalty_success_message);
+                }
+			}
+		})
+
+	});
+
+    
+	$('#form_2').on('submit', function(event) {
+
+		event.preventDefault();
+
+		var formData = new FormData($('#form_2')[0]);
+
+		$.ajax({
+			xhr : function() {
+				var xhr = new window.XMLHttpRequest();
+
+				xhr.upload.addEventListener('progress', function(e) {
+
+					if (e.lengthComputable) {
+
+						console.log('Bytes Loaded: ' + e.loaded);
+						console.log('Total Size: ' + e.total);
+						console.log('Percentage Uploaded: ' + (e.loaded / e.total))
+
+						var percent = Math.round((e.loaded / e.total) * 100);
+
+						$('#progressBar_2').attr('aria-valuenow', percent).css('width', percent + '%').text(percent + '%');
+
+					}
+
+				});
+
+				return xhr;
+			},
+			type : 'POST',
+			url : '/upload_metadata',
+			data : formData,
+			processData : false,
+			contentType : false,
+            success : function(response) {
+                if (response.metadata_error_message){
+                    $("#error_metadata").css('display', 'block');
+                    $("#error_metadata").html(response.metadata_error_message);
+                }
+                
+                if (response.metadata_alert_message){
+                    $("#warning_metadata").css('display', 'block');
+                    $("#warning_metadata").html(response.metadata_alert_message);
+                }
+
+                if (response.metadata_success_message){
+                    $("#success_metadata").css('display', 'block');
+                    $("#success_metadata").html(response.metadata_success_message);
+                }
+			}
+		});
+
+	});
+});
+</script>
+{% endblock content %}
