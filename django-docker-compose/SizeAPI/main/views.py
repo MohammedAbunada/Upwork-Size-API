@@ -27,6 +27,8 @@ def size(request):
         needed_inputs = ["apiKey", "height", "weight", "age", "userId"]
         inps = dict(request.GET)
         inps = {i:j[0] if isinstance(j, list) else j for i,j in inps.items()}
+        if inps["age"] <= 0 or inps["weight"] >= 150 or inps["height"] >= 200:
+            return JsonResponse({"status":"Failure", "body":f"Out of bounds inputs!"})
         missing = [i for i in needed_inputs if i not in inps]
         if missing:
             return JsonResponse({"status":"Failure", "body":f"The following inputs are missing! {needed_inputs}"})
